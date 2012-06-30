@@ -1,0 +1,26 @@
+nickname: "crappy"         # global (default) nickname
+username: "crappy"         # global (default) username
+realname: "crappy irc bot" # global (default) realname
+
+servers: # servers to connect to
+    SomeServer:
+        #uri: "irc://irc.someserver.net"
+        channels:
+            - name: "#ruby"
+            - name: "#crappy"
+              key:  "some key" # optional channel key
+
+    SomeOtherServer:
+        uri: "ircs://ircs.someotherserver.org:6697"
+        nickname: "SecureCrappy"  # overrides global nickname
+        username: "seccrap"       # overrides global username 
+        realname: "Crappy on SSL" # overrides global realname
+
+        channels:
+            - name: "#lobby"
+
+plugins:
+    nickserv:
+        SomeServer: "password" # options to pass to the nickserv plugin
+        SomeOtherServer: "password2"
+    logger: {} # if no options are to be passed, then give {}
