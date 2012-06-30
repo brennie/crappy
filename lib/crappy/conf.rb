@@ -1,6 +1,8 @@
 require 'yaml'
 require 'ostruct'
 
+require 'crappy/irc'
+
 module Crappy
 
   module Conf
@@ -37,23 +39,21 @@ module Crappy
           raise Exception.new("Server '#{server_name}' has no URI")
         end
         
-        begin
 
-          # The regex isn't 100% correct, but we any invalid hosts will be
-          # caught when trying to connect.
+        uri = URI.parse(server_opts['uri'])
 
-          if (%r{(?<proto>ircs?)://(?<host>[^:]+)(?::(?<port>\d+))?} =~ server_opts['uri']) == nil
-            raise Exception.new("Server '#{server_name}' has an invalid URI")
-          end
-
-          ssl = proto == 'ircs'
-
-          server.send('use_ssl?=', ssl)
-          server.host = host
-
-          server.port = port != nil ? port : 6667 
-
+        if !['irc', 'ircs'].include?(uri.scheme)
+          raise Exception.new("Server '#{server_name}' does not have an irc:// or ircs:// URI")
         end
+
+        if !['', '/'].include?(uri.path)
+          raise Exception.new("IRC URI paths not supported")
+        end
+
+        server.port = uri.port
+        server.host = uri.host
+        server.send('ssl?=', uri.scheme == 'ircs')
+
 
         names.each do |name|
           if server_opts.has_key?(name)

@@ -26,3 +26,4 @@ require 'crappy'
 
 bot = Crappy::Bot.new()
 
+bot.run()
