@@ -17,6 +17,13 @@ module Crappy
         @config.servers.each do |server_name, server_options|
           IRC::connect(server_name, server_options)
         end
+
+        Signal.trap('SIGINT') do
+          EventMachine.next_tick do
+            puts "Received SIGINT"
+            EventMachine.stop_event_loop()
+          end
+        end
       end
     end
   end

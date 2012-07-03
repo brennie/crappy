@@ -2,6 +2,7 @@ require 'uri'
 require 'eventmachine'
 require 'crappy/irc/parser'
 require 'crappy/irc/message'
+require 'crappy/irc/extension'
 
 module URI
   class IRC < Generic
@@ -27,7 +28,7 @@ module Crappy
         connectionType = Connection
       end
       
-      EventMachine::connect(options.host, options.port, connectionType, options)
+      EventMachine::connect(options.host, options.port, connectionType, name, options)
     end
 
     class Buffer
@@ -57,8 +58,9 @@ module Crappy
     end
 
     class Connection < EventMachine::Connection
-
-      def initialize(options)
+      attr_reader :name
+      def initialize(name, options)
+        @name = name
         @host = options.host
         @port = options.port
         @ssl = options.ssl?
@@ -70,21 +72,26 @@ module Crappy
       end
 
       def ready
-        send_data("NICK #{@nickname}\r\n")
-        send_data("USER #{@username} * 0 :#{@realname}\r\n")
+        send_line("NICK #{@nickname}")
+        send_line("USER #{@username} * 0 :#{@realname}")
 
         @to_join.each do |channel|
-          send_data("JOIN #{channel.name} #{channel.key}\r\n")
+          send_line("JOIN #{channel.name} #{channel.key}")
         end
         
+      end
+
+      def send_line(line)
+        send_data(line)
+        send_data("\r\n")
       end
 
       def receive_data(data)
         @buffer << data
         while @buffer.has_line?
           line = @buffer.get_line()
-
           message = Parser::parse(line)
+          ExtensionManager::emit(self, message.command, message.source, message.params)
         end
       end
       
