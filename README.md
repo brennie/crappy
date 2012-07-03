@@ -5,6 +5,6 @@ crappy is released under the MIT license.
 
 Usage
 -----
-
-1. Edit the `config.yaml.example` file and rename it `config.yaml`
-2. Run `crappy.rb`
+1. Run `rake` to build the IRC parser
+2. Edit the `config.yaml.example` file and rename it `config.yaml`
+3. Run `crappy.rb`

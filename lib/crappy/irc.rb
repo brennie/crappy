@@ -1,6 +1,8 @@
 require 'uri'
 require 'eventmachine'
-require 'pp'
+require 'crappy/irc/parser'
+require 'crappy/irc/message'
+
 module URI
   class IRC < Generic
     DEFAULT_PORT = 6667
@@ -28,6 +30,32 @@ module Crappy
       EventMachine::connect(options.host, options.port, connectionType, options)
     end
 
+    class Buffer
+      def initialize
+        @data = String.new()
+        @lines = Array.new()
+      end
+
+      def <<(data)
+        @data << data
+        while @data != nil && @data.include?("\r\n")
+          line, @data = @data.split("\r\n", 2)
+          @lines << line
+        end
+        if @data == nil
+          @data = String.new()
+        end
+      end
+
+      def has_line?
+        @lines.length() > 0
+      end
+
+      def get_line
+        @lines.pop()
+      end
+    end
+
     class Connection < EventMachine::Connection
 
       def initialize(options)
@@ -38,6 +66,7 @@ module Crappy
         @username = options.username 
         @realname = options.realname
         @to_join = options.channels
+        @buffer = Buffer.new()
       end
 
       def ready
@@ -51,7 +80,12 @@ module Crappy
       end
 
       def receive_data(data)
-        pp data
+        @buffer << data
+        while @buffer.has_line?
+          line = @buffer.get_line()
+
+          message = Parser::parse(line)
+        end
       end
       
       def connection_completed
@@ -68,5 +102,7 @@ module Crappy
         ready()
       end
     end
-  end
-end
+
+  end # module IRC
+
+end #module Crappy

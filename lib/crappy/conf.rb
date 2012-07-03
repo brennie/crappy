@@ -1,6 +1,5 @@
 require 'yaml'
 require 'ostruct'
-
 require 'crappy/irc'
 
 module Crappy
